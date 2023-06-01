@@ -14,12 +14,12 @@ func FileHandler(path string) *fileHandler {
 	return &fileHandler{path: path}
 }
 
-func (fp *fileHandler) ReadBinary() (binary.Binary, error) {
+func (fp *fileHandler) ReadBinary() binary.Binary {
 	data, err := ioutil.ReadFile(fp.path)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return data, nil
+	return data
 }
 
 func (fp *fileHandler) WriteBinary(data binary.Binary) error {
