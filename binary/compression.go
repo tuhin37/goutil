@@ -32,8 +32,8 @@ func (b Binary) Compress() Binary {
 	return buf.Bytes()
 }
 
-func (b *Binary) Decompress() Binary {
-	compressedBuf := bytes.NewBuffer(*b)
+func (b Binary) Decompress() Binary {
+	compressedBuf := bytes.NewBuffer(b)
 	gzReader, err := gzip.NewReader(compressedBuf)
 	if err != nil {
 		return nil
@@ -53,14 +53,14 @@ func (b *Binary) Decompress() Binary {
 	return decompressedBuf.Bytes()
 }
 
-func (b *Binary) CompressLZMA() Binary {
+func (b Binary) CompressLZMA() Binary {
 	var buf bytes.Buffer
 	lzmaWriter, err := lzma.NewWriter(&buf)
 	if err != nil {
 		return nil
 	}
 
-	_, err = lzmaWriter.Write(*b)
+	_, err = lzmaWriter.Write(b)
 	if err != nil {
 		return nil
 	}
@@ -73,8 +73,8 @@ func (b *Binary) CompressLZMA() Binary {
 	return buf.Bytes()
 }
 
-func (b *Binary) DecompressLZMA() Binary {
-	compressedBuf := bytes.NewBuffer(*b)
+func (b Binary) DecompressLZMA() Binary {
+	compressedBuf := bytes.NewBuffer(b)
 	lzmaReader, err := lzma.NewReader(compressedBuf)
 	if err != nil {
 		return nil
@@ -89,7 +89,7 @@ func (b *Binary) DecompressLZMA() Binary {
 	return decompressedBuf.Bytes()
 }
 
-func (b *Binary) Encrypt(key Binary) Binary {
+func (b Binary) Encrypt(key []byte) Binary {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil
@@ -103,7 +103,7 @@ func (b *Binary) Encrypt(key Binary) Binary {
 	}
 
 	// Pad the data to the nearest multiple of the block size
-	paddedData := padData(*b, aes.BlockSize)
+	paddedData := padData(b, aes.BlockSize)
 
 	// Create a new CBC mode encrypter using the AES block cipher
 	mode := cipher.NewCBCEncrypter(block, iv)
@@ -124,15 +124,15 @@ func (b *Binary) Encrypt(key Binary) Binary {
 	return encoded
 }
 
-func (b *Binary) Decrypt(key Binary) Binary {
+func (b Binary) Decrypt(key []byte) Binary {
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil
 	}
 
 	// Decode the base64-encoded encrypted data
-	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(*b)))
-	n, err := base64.StdEncoding.Decode(decoded, *b)
+	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
+	n, err := base64.StdEncoding.Decode(decoded, b)
 	if err != nil {
 		return nil
 	}
