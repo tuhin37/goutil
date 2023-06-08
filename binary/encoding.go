@@ -6,10 +6,10 @@ func (b *Binary) Base64Encode() string {
 	return base64.StdEncoding.EncodeToString(*b)
 }
 
-func (b *Binary) Base64Decode(encodedStr string) ([]byte, error) {
+func Base64Decode(encodedStr string) Binary {
 	decodedBytes, err := base64.StdEncoding.DecodeString(encodedStr)
 	if err != nil {
-		return nil, err
+		return nil
 	}
-	return decodedBytes, nil
+	return decodedBytes
 }

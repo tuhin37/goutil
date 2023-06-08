@@ -7,83 +7,79 @@ import (
 	"github.com/ulikunitz/xz/lzma"
 )
 
-func (b *Binary) Compress() (Binary, error) {
+func (b *Binary) Compress() Binary {
 	var buf bytes.Buffer
 	gzWriter, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	_, err = gzWriter.Write(*b)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	err = gzWriter.Close()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes()
 }
 
-func Decompress(compressedData []byte) ([]byte, error) {
-	compressedBuf := bytes.NewBuffer(compressedData)
+func (b *Binary) Decompress() Binary {
+	compressedBuf := bytes.NewBuffer(*b)
 	gzReader, err := gzip.NewReader(compressedBuf)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	var decompressedBuf bytes.Buffer
 	_, err = decompressedBuf.ReadFrom(gzReader)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	err = gzReader.Close()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return decompressedBuf.Bytes(), nil
+	return decompressedBuf.Bytes()
 }
 
-func (b *Binary) CompressLZMA() ([]byte, error) {
+func (b *Binary) CompressLZMA() Binary {
 	var buf bytes.Buffer
 	lzmaWriter, err := lzma.NewWriter(&buf)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	_, err = lzmaWriter.Write(*b)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	err = lzmaWriter.Close()
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return buf.Bytes(), nil
+	return buf.Bytes()
 }
 
-func DecompressLZMA(compressedData []byte) ([]byte, error) {
-	compressedBuf := bytes.NewBuffer(compressedData)
+func (b *Binary) DecompressLZMA() Binary {
+	compressedBuf := bytes.NewBuffer(*b)
 	lzmaReader, err := lzma.NewReader(compressedBuf)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
 	var decompressedBuf bytes.Buffer
 	_, err = decompressedBuf.ReadFrom(lzmaReader)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	if err != nil {
-		return nil, err
-	}
-
-	return decompressedBuf.Bytes(), nil
+	return decompressedBuf.Bytes()
 }
