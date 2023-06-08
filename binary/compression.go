@@ -12,14 +12,14 @@ import (
 	"github.com/ulikunitz/xz/lzma"
 )
 
-func (b *Binary) Compress() Binary {
+func (b Binary) Compress() Binary {
 	var buf bytes.Buffer
 	gzWriter, err := gzip.NewWriterLevel(&buf, gzip.BestCompression)
 	if err != nil {
 		return nil
 	}
 
-	_, err = gzWriter.Write(*b)
+	_, err = gzWriter.Write(b)
 	if err != nil {
 		return nil
 	}
