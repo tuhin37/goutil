@@ -5,12 +5,77 @@ import (
 	"compress/gzip"
 	"crypto/aes"
 	"crypto/cipher"
+	"crypto/md5"
 	"crypto/rand"
+	"crypto/sha1"
+	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/base64"
+	"encoding/hex"
+	"hash/adler32"
+	"hash/crc32"
 	"io"
 
 	"github.com/ulikunitz/xz/lzma"
+	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/crypto/sha3"
 )
+
+type Binary []byte
+
+// --------------------------- Hashing ---------------------------
+
+func (b Binary) CalculateMD5() string {
+	hasher := md5.New()
+	hasher.Write(b)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (b Binary) CalculateSHA1() string {
+	hasher := sha1.New()
+	hasher.Write(b)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (b Binary) CalculateSHA256() string {
+	hasher := sha256.New()
+	hasher.Write(b)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (b Binary) CalculateSHA3() string {
+	hasher := sha3.New256()
+	hasher.Write(b)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (b Binary) CalculateSHA512() string {
+	hasher := sha512.New()
+	hasher.Write(b)
+	return hex.EncodeToString(hasher.Sum(nil))
+}
+
+func (b Binary) CalculateBcrypt() (string, error) {
+	hashedBytes, err := bcrypt.GenerateFromPassword(b, bcrypt.DefaultCost)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hashedBytes), nil
+}
+
+func (b Binary) CalculateCRC32() uint32 {
+	hasher := crc32.NewIEEE()
+	hasher.Write(b)
+	return hasher.Sum32()
+}
+
+func (b Binary) CalculateAdler32() uint32 {
+	hasher := adler32.New()
+	hasher.Write(b)
+	return hasher.Sum32()
+}
+
+// ------------------------- compression -------------------------
 
 func (b Binary) Compress() Binary {
 	var buf bytes.Buffer
@@ -89,6 +154,22 @@ func (b Binary) DecompressLZMA() Binary {
 	return decompressedBuf.Bytes()
 }
 
+//--------------------------- encoding ---------------------------
+
+func (b Binary) EncodeBase64() string {
+	return base64.StdEncoding.EncodeToString(b)
+}
+
+func DecodeBase64(encodedStr string) Binary {
+	decodedBytes, err := base64.StdEncoding.DecodeString(encodedStr)
+	if err != nil {
+		return nil
+	}
+	return decodedBytes
+}
+
+//--------------------------- encryption ---------------------------
+
 func (b Binary) Encrypt(key []byte) Binary {
 	block, err := aes.NewCipher(key)
 	if err != nil {
@@ -157,7 +238,7 @@ func (b Binary) Decrypt(key []byte) Binary {
 	return unpadded
 }
 
-//------------------------------------------------------------
+//----------------------------- helper -----------------------------
 
 // Pad the data to the nearest multiple of blockSize using PKCS7 padding
 func padData(data []byte, blockSize int) []byte {
