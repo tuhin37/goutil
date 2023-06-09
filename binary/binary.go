@@ -55,12 +55,12 @@ func (b Binary) CalculateSHA512() string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
-func (b Binary) CalculateBcrypt() (string, error) {
+func (b Binary) CalculateBcrypt() string {
 	hashedBytes, err := bcrypt.GenerateFromPassword(b, bcrypt.DefaultCost)
 	if err != nil {
-		return "", err
+		return ""
 	}
-	return hex.EncodeToString(hashedBytes), nil
+	return hex.EncodeToString(hashedBytes)
 }
 
 func (b Binary) CalculateCRC32() uint32 {
