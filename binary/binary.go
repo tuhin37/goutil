@@ -171,43 +171,88 @@ func DecodeBase64(encodedStr string) Binary {
 //--------------------------- encryption ---------------------------
 
 func (b Binary) Encrypt(key []byte) Binary {
-	block, err := aes.NewCipher(key)
+
+	// the key argument should be the AES key, either 16, 24, or 32 bytes
+	// to select AES-128, AES-192, or AES-256.
+	// since it is not garanteed that the key is 16, 24 or 32 bytes,
+	// do md5 of incoming key to make sure the outputis always 32 bytes
+	hasher := md5.New()
+	hasher.Write(key)
+	keyAES := []byte(hex.EncodeToString(hasher.Sum(nil))) // 32 bytes always, no matter what input
+
+	block, err := aes.NewCipher(keyAES)
 	if err != nil {
 		return nil
 	}
 
-	// Create a new byte slice to store the ciphertext
-	ciphertext := make([]byte, aes.BlockSize+len(b))
-	iv := ciphertext[:aes.BlockSize]
-
-	// Generate a random IV (initialization vector)
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+	// Generate a random initialization vector (IV)
+	iv := make([]byte, aes.BlockSize)
+	_, err = io.ReadFull(rand.Reader, iv)
+	if err != nil {
 		return nil
 	}
 
-	// Use cipher.NewCTR to create a stream cipher for encryption
-	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], b)
+	// Pad the data to the nearest multiple of the block size
+	padding := aes.BlockSize - (len(b) % aes.BlockSize)
+	paddedData := append(b, bytes.Repeat([]byte{byte(padding)}, padding)...)
 
-	return ciphertext
+	// Create a new CBC mode encrypter using the AES block cipher
+	mode := cipher.NewCBCEncrypter(block, iv)
+
+	// Create a buffer for the encrypted data
+	encrypted := make([]byte, len(paddedData))
+
+	// Encrypt the data
+	mode.CryptBlocks(encrypted, paddedData)
+
+	// Prepend the IV to the encrypted data
+	encrypted = append(iv, encrypted...)
+
+	// Encode the encrypted data as base64 for readability
+	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(encrypted)))
+	base64.StdEncoding.Encode(encoded, encrypted)
+
+	return encoded
 }
 
 func (b Binary) Decrypt(key []byte) Binary {
-	block, err := aes.NewCipher(key)
+	// the key argument should be the AES key, either 16, 24, or 32 bytes
+	// to select AES-128, AES-192, or AES-256.
+	// since it is not garanteed that the key is 16, 24 or 32 bytes,
+	// do md5 of incoming key to make sure the outputis always 32 bytes
+	hasher := md5.New()
+	hasher.Write(key)
+	keyAES := []byte(hex.EncodeToString(hasher.Sum(nil))) // 32 bytes always, no matter what input
+
+	block, err := aes.NewCipher(keyAES)
 	if err != nil {
 		return nil
 	}
 
-	if len(b) < aes.BlockSize {
+	// Decode the base64-encoded encrypted data
+	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(b)))
+	n, err := base64.StdEncoding.Decode(decoded, b)
+	if err != nil {
 		return nil
 	}
+	decoded = decoded[:n]
 
-	iv := b[:aes.BlockSize]
-	ciphertext := b[aes.BlockSize:]
+	// Extract the IV from the encrypted data
+	iv := decoded[:aes.BlockSize]
+	encryptedData := decoded[aes.BlockSize:]
 
-	// Use cipher.NewCTR to create a stream cipher for decryption
-	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(ciphertext, ciphertext)
+	// Create a new CBC mode decrypter using the AES block cipher
+	mode := cipher.NewCBCDecrypter(block, iv)
 
-	return ciphertext
+	// Create a buffer for the decrypted data
+	decrypted := make([]byte, len(encryptedData))
+
+	// Decrypt the data
+	mode.CryptBlocks(decrypted, encryptedData)
+
+	// Remove the padding from the decrypted data
+	padding := int(decrypted[len(decrypted)-1])
+	unpadded := decrypted[:len(decrypted)-padding]
+
+	return unpadded
 }

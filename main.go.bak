@@ -1,0 +1,90 @@
+package main
+
+import (
+	"fmt"
+
+	"github.com/tuhin37/goutil/fileio"
+)
+
+// func encrypt(data, key []byte) ([]byte, error) {
+// 	block, err := aes.NewCipher(key)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Generate a random initialization vector (IV)
+// 	iv := make([]byte, aes.BlockSize)
+// 	_, err = io.ReadFull(rand.Reader, iv)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Pad the data to the nearest multiple of the block size
+// 	padding := aes.BlockSize - (len(data) % aes.BlockSize)
+// 	paddedData := append(data, bytes.Repeat([]byte{byte(padding)}, padding)...)
+
+// 	// Create a new CBC mode encrypter using the AES block cipher
+// 	mode := cipher.NewCBCEncrypter(block, iv)
+
+// 	// Create a buffer for the encrypted data
+// 	encrypted := make([]byte, len(paddedData))
+
+// 	// Encrypt the data
+// 	mode.CryptBlocks(encrypted, paddedData)
+
+// 	// Prepend the IV to the encrypted data
+// 	encrypted = append(iv, encrypted...)
+
+// 	// Encode the encrypted data as base64 for readability
+// 	encoded := make([]byte, base64.StdEncoding.EncodedLen(len(encrypted)))
+// 	base64.StdEncoding.Encode(encoded, encrypted)
+
+// 	return encoded, nil
+// }
+
+// func decrypt(encrypted, key []byte) ([]byte, error) {
+// 	block, err := aes.NewCipher(key)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	// Decode the base64-encoded encrypted data
+// 	decoded := make([]byte, base64.StdEncoding.DecodedLen(len(encrypted)))
+// 	n, err := base64.StdEncoding.Decode(decoded, encrypted)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	decoded = decoded[:n]
+
+// 	// Extract the IV from the encrypted data
+// 	iv := decoded[:aes.BlockSize]
+// 	encryptedData := decoded[aes.BlockSize:]
+
+// 	// Create a new CBC mode decrypter using the AES block cipher
+// 	mode := cipher.NewCBCDecrypter(block, iv)
+
+// 	// Create a buffer for the decrypted data
+// 	decrypted := make([]byte, len(encryptedData))
+
+// 	// Decrypt the data
+// 	mode.CryptBlocks(decrypted, encryptedData)
+
+// 	// Remove the padding from the decrypted data
+// 	padding := int(decrypted[len(decrypted)-1])
+// 	unpadded := decrypted[:len(decrypted)-padding]
+
+// 	return unpadded, nil
+// }
+
+func main() {
+	// Example usage
+
+	file := fileio.FileHandler("./data1.txt")
+	fileContentRaw := file.ReadBinary()
+
+	// Encrypt the data
+	encrypted := fileContentRaw.Encrypt([]byte("supersecretkey"))
+	fmt.Println("Encrypted data:", string(encrypted))
+	decrypted := encrypted.Decrypt([]byte("supersecretkey"))
+	fmt.Println("Decrypted data:", string(decrypted))
+}
