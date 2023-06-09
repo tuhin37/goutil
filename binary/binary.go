@@ -256,3 +256,52 @@ func (b Binary) Decrypt(key []byte) Binary {
 
 	return unpadded
 }
+
+/*
+--------------------------- examples ---------------------------
+func main() {
+
+	file := fileio.FileHandler("./foo.bar")
+	fileContentRaw := file.ReadBinary()
+
+	// //------------------------------- compress -------------------------------
+	// fmt.Println("-----------------------------------------------------------")
+	// compressedLZMA := fileContentRaw.CompressLZMA()
+	// compressedGZIP := fileContentRaw.Compress()
+	// fmt.Println("original size: ", len(fileContentRaw))
+	// fmt.Println("compressedLZMA size: ", len(compressedLZMA))
+	// fmt.Println("compressedGZIP size: ", len(compressedGZIP))
+
+	// decompressedLZMA := compressedLZMA.DecompressLZMA()
+	// decompressedGZIP := compressedGZIP.Decompress()
+
+	// fmt.Println("decompressedLZMA: ", string(decompressedLZMA))
+	// fmt.Println("decompressedLGZIP: ", string(decompressedGZIP))
+
+	// //-------------------------------- encode --------------------------------
+	// fmt.Println("-----------------------------------------------------------")
+	// encoded64 := fileContentRaw.EncodeBase64()
+	// fmt.Println("base64-encoded: ", encoded64)
+	// decoded64 := binary.DecodeBase64(encoded64)
+	// fmt.Println("base64-decoded: ", string(decoded64))
+
+	//------------------------------- encrypt -------------------------------
+	fmt.Println("-----------------------------------------------------------")
+	// Encrypt the data
+	encrypted := fileContentRaw.Encrypt([]byte("supersecretkey"))
+	fmt.Println("Encrypted data:", string(encrypted))
+	decrypted := encrypted.Decrypt([]byte("supersecretkey"))
+	fmt.Println("Decrypted data:", string(decrypted))
+
+	//------------------------------- hashing -------------------------------
+	fmt.Println("-----------------------------------------------------------")
+	fmt.Println("md5: ", fileContentRaw.CalculateMD5())
+	fmt.Println("sha1: ", fileContentRaw.CalculateSHA1())
+	fmt.Println("sha256: ", fileContentRaw.CalculateSHA256())
+	fmt.Println("sha512: ", fileContentRaw.CalculateSHA512())
+	fmt.Println("sha3: ", fileContentRaw.CalculateSHA3())
+	fmt.Println("bcrypt: ", fileContentRaw.CalculateBcrypt())
+	fmt.Println("crc32: ", fileContentRaw.CalculateCRC32())
+	fmt.Println("Adler32: ", fileContentRaw.CalculateAdler32())
+}
+*/
